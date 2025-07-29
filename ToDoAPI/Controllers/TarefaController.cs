@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ToDoAPI.Entities;
-using ToDoAPI.Repositories;
+using ToDoAPI.Services;
 
 namespace ToDoAPI.Controllers
 {
@@ -8,21 +8,24 @@ namespace ToDoAPI.Controllers
     [Route("api/[controller]")]
     public class TarefasController : ControllerBase
     {
-        private readonly TarefaRepository _repo;
+        private readonly ITarefaService _service;
 
-        public TarefasController(TarefaRepository repo)
+        public TarefasController(ITarefaService service)
         {
-            _repo = repo;
+            _service = service;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get() =>
-            Ok(await _repo.ListarAsync());
+        public async Task<IActionResult> Get()
+        {
+            var tarefas = await _service.ListarAsync();
+            return Ok(tarefas);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Tarefas tarefa)
         {
-            await _repo.AdicionarAsync(tarefa);
+            await _service.AdicionarAsync(tarefa);
             return Created("", tarefa);
         }
 
@@ -30,14 +33,14 @@ namespace ToDoAPI.Controllers
         public async Task<IActionResult> Put(int id, [FromBody] Tarefas tarefa)
         {
             tarefa.Id = id;
-            await _repo.AtualizarAsync(tarefa);
+            await _service.AtualizarAsync(tarefa);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _repo.ExcluirAsync(id);
+            await _service.ExcluirAsync(id);
             return NoContent();
         }
     }
